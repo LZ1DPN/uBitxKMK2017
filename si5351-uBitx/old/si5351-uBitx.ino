@@ -42,8 +42,8 @@ Si5351 si5351;
 Adafruit_SSD1306 display(OLED_RESET);
 
 #define SECOND_OSC (57000000l)
-int_fast32_t INIT_USB_FREQ = 11996500l;
-int_fast32_t INIT_LSB_FREQ = 11998500l;
+#define INIT_USB_FREQ   (11996500l)
+#define INIT_LSB_FREQ   (11998500l)
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
 unsigned long cwTimeout = 0;     //keyer var - dead operator control
@@ -195,6 +195,7 @@ Wire.begin();
   si5351.set_freq(SECOND_OSC * 100ULL, SI5351_CLK1); 
 //VFO
   si5351.set_freq(5900000000l, SI5351_CLK2); 
+  printLine2(b);
   delay(2000);
   
   // Set CLK levels
@@ -327,13 +328,13 @@ if (Serial.available()) {
    }
    if(byteRead == 55){     // 1 - up freq
     rxbfo = rxbfo + increment;
-	  INIT_LSB_FREQ = rxbfo;
+	INIT_LSB_FREQ=rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
    }
   if(byteRead == 56){   // 2 - down freq
     rxbfo = rxbfo - increment;
-	  INIT_LSB_FREQ = rxbfo;
+	INIT_LSB_FREQ=rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
   }
