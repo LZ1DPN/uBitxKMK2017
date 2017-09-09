@@ -42,8 +42,8 @@ Si5351 si5351;
 Adafruit_SSD1306 display(OLED_RESET);
 
 #define SECOND_OSC (57000000l)
-int_fast32_t INIT_USB_FREQ = 11996500l;
-int_fast32_t INIT_LSB_FREQ = 11998500l;
+int_fast32_t INIT_USB_FREQ = 11991500l;   //6500
+int_fast32_t INIT_LSB_FREQ = 11993500l;   //8500
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
 unsigned long cwTimeout = 0;     //keyer var - dead operator control
