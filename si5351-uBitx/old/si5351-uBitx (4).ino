@@ -42,7 +42,7 @@ Si5351 si5351;
 Adafruit_SSD1306 display(OLED_RESET);
 
 #define SECOND_OSC (57000000l)  // 57000000l
-int_fast32_t INIT_USB_FREQ = 11996300l;   //6500, 11996500l, 11997700l, 11996300l; 12000500l
+int_fast32_t INIT_USB_FREQ = 11996300l;   //6500, 11996500l, 11997700l, 11996300l;
 int_fast32_t INIT_LSB_FREQ = 11998300l;   //8500, 11998500l, 11999700l, 11998300l;
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
@@ -327,13 +327,13 @@ if (Serial.available()) {
    }
    if(byteRead == 55){     // 1 - up freq
     rxbfo = rxbfo + 10;
-	  INIT_USB_FREQ = rxbfo;
+	  INIT_LSB_FREQ = rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
    }
   if(byteRead == 56){   // 2 - down freq
     rxbfo = rxbfo - 10;
-	  INIT_USB_FREQ = rxbfo;
+	  INIT_LSB_FREQ = rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
   }
@@ -410,7 +410,6 @@ void setincrement(){
 
 // oled display functions
 void showFreq(){
-/*
 	display.clearDisplay();	
 	display.setTextSize(2);
 	display.setTextColor(WHITE);
@@ -423,7 +422,6 @@ void showFreq(){
 	display.setCursor(64,16);
 	display.print("rit:");display.print(rxRIT);
 	display.display();
-*/  
 }
 
 
