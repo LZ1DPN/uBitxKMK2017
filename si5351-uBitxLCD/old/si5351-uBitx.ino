@@ -22,7 +22,6 @@ Revision 11.0 - May 18, 2017  - add +/- RIT
 Revision 12.0 - August 17, 2017  - CM2KMK 40m SSB trx
 Revision 13.0 - August 28, 2017  - LZ1DPN 20m SSB trx
 Revision 14.0 - September 07, 2017  - uBitx SSB trx
-Revision 14.0 - Octomber 07, 2017  - uBitx SSB trx
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -42,14 +41,9 @@ Si5351 si5351;
 #define OLED_RESET 5
 Adafruit_SSD1306 display(OLED_RESET);
 
-#define SECOND_OSC (57000000l)  // 57000000l
-//<<<<<<< HEAD
-int_fast32_t INIT_USB_FREQ = 11997700l;   //6500, 11996500l, 11997700l
-int_fast32_t INIT_LSB_FREQ = 11998500l;   //8500, 11998500l, 11999700l
-//=======
-//int_fast32_t INIT_USB_FREQ = 11996300l;   //6500, 11996500l, 11997700l, 11996300l;
-//int_fast32_t INIT_LSB_FREQ = 11998300l;   //8500, 11998500l, 11999700l, 11998300l;
-//>>>>>>> origin/master
+#define SECOND_OSC (57000000l)
+#define INIT_USB_FREQ   (11996500l)
+#define INIT_LSB_FREQ   (11998500l)
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
 unsigned long cwTimeout = 0;     //keyer var - dead operator control
@@ -68,11 +62,7 @@ Rotary r = Rotary(2,3); // sets the pins for rotary encoder uses.  Must be inter
   
 int_fast32_t rx=7000000; // Starting frequency of VFO freq
 int_fast32_t rx2=1;  // temp variable to hold the updated frequency
-//<<<<<<< HEAD
 int_fast32_t rxofset=0; 
-//=======
-//int_fast32_t rxofset=-1700;   //-300 155200
-//>>>>>>> origin/master
 int_fast32_t rxbfo=INIT_LSB_FREQ;  //BFO osc 11999904  11998800
 int_fast32_t rxRIT=0;
 
@@ -200,17 +190,18 @@ Wire.begin();
   si5351.output_enable(SI5351_CLK1, 1);
   si5351.output_enable(SI5351_CLK2, 1);
 //BFO
-  si5351.set_freq(rxbfo * 100ULL,  SI5351_CLK0);  //rxbfo
+  si5351.set_freq(rxbfo * 100ULL,  SI5351_CLK0); 
 //SECOND OSCILATOR
   si5351.set_freq(SECOND_OSC * 100ULL, SI5351_CLK1); 
 //VFO
-  si5351.set_freq(((45000000 + rx - rxofset) * 100ULL), SI5351_CLK2); //4500000000l
+  si5351.set_freq(5900000000l, SI5351_CLK2); 
+  printLine2(b);
   delay(2000);
   
   // Set CLK levels
-  si5351.drive_strength(SI5351_CLK0,SI5351_DRIVE_8MA); //you can set this to 2MA, 4MA, 6MA or 8MA //6 8
-  si5351.drive_strength(SI5351_CLK1,SI5351_DRIVE_8MA); //be careful though - measure into 50ohms  //4
-  si5351.drive_strength(SI5351_CLK2,SI5351_DRIVE_8MA); //8
+  si5351.drive_strength(SI5351_CLK0,SI5351_DRIVE_8MA); //you can set this to 2MA, 4MA, 6MA or 8MA
+  si5351.drive_strength(SI5351_CLK1,SI5351_DRIVE_8MA); //be careful though - measure into 50ohms
+  si5351.drive_strength(SI5351_CLK2,SI5351_DRIVE_8MA); //
  
   Serial.println("*Enable PLL Output\n");
   Serial.println("*Si5351 ON\n");
@@ -233,7 +224,7 @@ digitalWrite(A0,HIGH);  //level
 
 // Initialize the Serial port so that we can use it for debugging
   Serial.begin(115200);
-  Serial.println("Start VFO ver 14.0 ssb");
+  Serial.println("Start VFO ver 12.0 ssb 2.0");
 
   // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
   display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C address 0x3C (for oled 128x32)
@@ -298,7 +289,7 @@ if (Serial.available()) {
     Serial.println(increment);
 		}
 	if(byteRead == 52){		// 4 - print VFO state in serial console
-		Serial.println("VFO_VERSION 14.0");
+		Serial.println("VFO_VERSION 12.0");
 		Serial.println(rx);
 		Serial.println(rxbfo);
 		Serial.println(increment);
@@ -308,7 +299,7 @@ if (Serial.available()) {
              var_i=0;           
              while(var_i<=40000){
                 var_i++;
-                rx = rx + 10;
+                rx = rx + increment;
                 sendFrequency(rx);
                 Serial.println(rx);
                 showFreq();
@@ -324,7 +315,7 @@ if (Serial.available()) {
              var_i=0;           
              while(var_i<=40000){
                 var_i++;
-                rx = rx - 10;
+                rx = rx - increment;
                 sendFrequency(rx);
                 Serial.println(rx);
                 showFreq();
@@ -336,22 +327,14 @@ if (Serial.available()) {
              }        
    }
    if(byteRead == 55){     // 1 - up freq
-//<<<<<<< HEAD
-    rxbfo = rxbfo + 1;
-//=======
-//    rxbfo = rxbfo + 10;
-//>>>>>>> origin/master
-	  INIT_LSB_FREQ = rxbfo;
+    rxbfo = rxbfo + increment;
+	INIT_LSB_FREQ=rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
    }
   if(byteRead == 56){   // 2 - down freq
-//<<<<<<< HEAD
-    rxbfo = rxbfo - 1;
-//=======
-//    rxbfo = rxbfo - 10;
-//>>>>>>> origin/master
-	  INIT_LSB_FREQ = rxbfo;
+    rxbfo = rxbfo - increment;
+	INIT_LSB_FREQ=rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
   }
@@ -400,10 +383,10 @@ void sendFrequency(double frequency) {
 //		digitalWrite(TX_LPF_SEL, 0);
 		rxbfo=INIT_LSB_FREQ;
 	}
-	si5351.set_freq(rxbfo * 100ULL, SI5351_CLK0);  //rxbfo 
+	si5351.set_freq(rxbfo * 100ULL, SI5351_CLK0); 
   
 // VFO CLK
-    si5351.set_freq(((45000000 + rx - rxofset) * 100ULL), SI5351_CLK2);
+    si5351.set_freq((SECOND_OSC - rxbfo + rx) * 100ULL, SI5351_CLK2);
  	Serial.println(rx);   // for serial console debuging
 }
 // new
@@ -475,7 +458,7 @@ if(BTNdecodeON != BTNlaststate){
             rx=5250750;
             break;
           case 4:
-            rx=7199000;
+            rx=7000000;
             break;
           case 5:
             rx=10100750;

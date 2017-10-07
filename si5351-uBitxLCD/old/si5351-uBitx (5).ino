@@ -22,7 +22,6 @@ Revision 11.0 - May 18, 2017  - add +/- RIT
 Revision 12.0 - August 17, 2017  - CM2KMK 40m SSB trx
 Revision 13.0 - August 28, 2017  - LZ1DPN 20m SSB trx
 Revision 14.0 - September 07, 2017  - uBitx SSB trx
-Revision 14.0 - Octomber 07, 2017  - uBitx SSB trx
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.

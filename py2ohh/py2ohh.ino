@@ -17,7 +17,7 @@ uBitx mod - 25.09.2017 LZ1DPN
 
 #define F_MIN        1000000UL               // Lower frequency limit
 #define F_MAX        16000000000UL
-#define SECOND_OSC   (57000000l)
+#define SECOND_OSC   (55000000l)
 
 #define ENCODER_A    3                      // Encoder pin A
 #define ENCODER_B    2                      // Encoder pin B
@@ -32,12 +32,12 @@ uBitx mod - 25.09.2017 LZ1DPN
 LiquidCrystal lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);       // LCD - pin assignement in
 Si5351 si5351;
 Rotary r = Rotary(ENCODER_A, ENCODER_B);
-volatile uint32_t LSB = 999830000ULL;
-volatile uint32_t USB = 999630000ULL;
-volatile uint32_t bfo = 999850000ULL;   //start in usb
+volatile uint32_t LSB = 999200000UL;
+volatile uint32_t USB = 999200000UL;
+volatile uint32_t bfo = 999200000UL;   //start in usb
 //These USB/LSB frequencies are added to or subtracted from the vfo frequency in the "Loop()"
 //In this example my start frequency will be 14.20000 plus 9.001500 or clk0 = 23.2015Mhz
-volatile uint32_t vfo = 700000000ULL / SI5351_FREQ_MULT; //start freq - change to suit
+volatile uint32_t vfo = 700000000UL / SI5351_FREQ_MULT; //start freq - change to suit
 volatile uint32_t radix = 100;    //start step size - change to suit
 boolean changed_f = 0;
 String tbfo = "";
@@ -241,7 +241,7 @@ void loop()
     si5351.set_freq((vfo * SI5351_FREQ_MULT) + 4500000000, SI5351_CLK2);
 
 //BFO
-if (changed_f){
+
     if (vfo >= 10000000ULL & tbfo != "USB")
     {
       bfo = USB;
@@ -256,7 +256,7 @@ if (changed_f){
       si5351.set_freq( bfo, SI5351_CLK0);
       Serial.println("We've switched from USB to LSB");
     }
-}
+
 #endif
 
 #ifdef Direct_conversion
@@ -275,7 +275,7 @@ if (changed_f){
   // Button press changes the frequency change step for 1 Hz steps
   if (get_button())
   {
-    switch (radix)
+	switch (radix)
     {
       case 1:
         radix = 10;
@@ -295,6 +295,9 @@ if (changed_f){
       case 100000:
         radix = 1000000;
         break;
+	  case 1000000:
+		radix = 1;
+		break;
     }
     display_radix();
   }

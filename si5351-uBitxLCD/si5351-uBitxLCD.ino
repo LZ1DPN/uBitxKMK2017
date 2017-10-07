@@ -22,7 +22,7 @@ Revision 11.0 - May 18, 2017  - add +/- RIT
 Revision 12.0 - August 17, 2017  - CM2KMK 40m SSB trx
 Revision 13.0 - August 28, 2017  - LZ1DPN 20m SSB trx
 Revision 14.0 - September 07, 2017  - uBitx SSB trx
-Revision 14.0 - Octomber 07, 2017  - uBitx SSB trx
+Revision 15.0 - Octomber 07, 2017  - uBitx with LCD and rotary encoder
 
 This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
 without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
@@ -33,27 +33,19 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 // Include the library code
 #include <Wire.h>
+#include <LiquidCrystal.h>
 #include <SPI.h>
 #include <si5351.h>
 Si5351 si5351;
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include <rotary.h>
-#define OLED_RESET 5
-Adafruit_SSD1306 display(OLED_RESET);
-
 #define SECOND_OSC (57000000l)  // 57000000l
-//<<<<<<< HEAD
-int_fast32_t INIT_USB_FREQ = 11997700l;   //6500, 11996500l, 11997700l
-int_fast32_t INIT_LSB_FREQ = 11998500l;   //8500, 11998500l, 11999700l
-//=======
-//int_fast32_t INIT_USB_FREQ = 11996300l;   //6500, 11996500l, 11997700l, 11996300l;
-//int_fast32_t INIT_LSB_FREQ = 11998300l;   //8500, 11998500l, 11999700l, 11998300l;
-//>>>>>>> origin/master
+
+int_fast32_t INIT_USB_FREQ = 11997700l;   //6500, 11996500l, 11997700l, 11996300l;
+int_fast32_t INIT_LSB_FREQ = 11998500l;   //8500, 11998500l, 11999700l, 11998300l;
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
 unsigned long cwTimeout = 0;     //keyer var - dead operator control
-#define TX_RX (12)   // (2 sided 2 possition relay) - for Farhan minima +5V to Receive 0V to Transmit !!! (see Your schema and change if need)
+#define TX_RX (5)   // (2 sided 2 possition relay) - for Farhan minima +5V to Receive 0V to Transmit !!! (see Your schema and change if need)
 #define CW_KEY (4)   // KEY output pin - in Q7 transistor colector (+5V when keyer down for RF signal modulation) (in Minima to enable sidetone generator on)
 #define PTT_ON (6)   // PTT button 
 #define ANALOG_KEYER (A1)  // KEYER input - for analog straight key
@@ -68,11 +60,7 @@ Rotary r = Rotary(2,3); // sets the pins for rotary encoder uses.  Must be inter
   
 int_fast32_t rx=7000000; // Starting frequency of VFO freq
 int_fast32_t rx2=1;  // temp variable to hold the updated frequency
-//<<<<<<< HEAD
-int_fast32_t rxofset=0; 
-//=======
-//int_fast32_t rxofset=-1700;   //-300 155200
-//>>>>>>> origin/master
+int_fast32_t rxofset=0; //int_fast32_t rxofset=-1700;   //-300 155200
 int_fast32_t rxbfo=INIT_LSB_FREQ;  //BFO osc 11999904  11998800
 int_fast32_t rxRIT=0;
 
@@ -88,9 +76,25 @@ int_fast32_t timepassed = millis(); // int to hold the arduino miilis since star
 // buttons temp var
 int BTNdecodeON = 0;   
 int BTNlaststate = 0;
-int BTNcheck = 0;
-int BTNcheck2 = 0;
+//int BTNcheck = 0;
+//int BTNcheck2 = 0;
 int BTNinc = 3; // set number of default band ---> (for 7MHz = 3)
+
+//lcd
+/*
+ The 16x2 LCD is connected as follows:
+    LCD's PIN   Raduino's PIN  PURPOSE      ATMEGA328's PIN
+    4           13  12           Reset LCD    19
+    6           12  11           Enable       18
+    11          10  9           D4           17
+    12          11  10           D5           16
+    13           9  8           D6           15
+    14           8  7           D7           14
+*/
+
+// https://www.arduino.cc/en/Tutorial/LiquidCrystalDisplay
+
+LiquidCrystal lcd(12, 11, 10, 9, 8, 7);
 
 /**************************************/
 /* PTT Check                          */
@@ -161,7 +165,7 @@ void checkCW(){
   //if we have keyuup for a longish time while in cw rx mode
   if (inTx == 1 && cwTimeout < millis()){
      //move the radio back to receive
-	digitalWrite(CW_KEY, 0);
+  	digitalWrite(CW_KEY, 0);
     digitalWrite(TX_RX, 0);
     si5351.output_enable(SI5351_CLK1, 0);
     si5351.set_freq((100000L), SI5351_CLK1);
@@ -235,28 +239,9 @@ digitalWrite(A0,HIGH);  //level
   Serial.begin(115200);
   Serial.println("Start VFO ver 14.0 ssb");
 
-  // by default, we'll generate the high voltage from the 3.3v line internally! (neat!)
-  display.begin(SSD1306_SWITCHCAPVCC, 0x3C);  // initialize with the I2C address 0x3C (for oled 128x32)
-  
-  // Show image buffer on the display hardware.
-  // Since the buffer is intialized with an Adafruit splashscreen
-  // internally, this will display the splashscreen.
-  display.display();
-
-  // Clear the buffer.
-	display.clearDisplay();	
-	display.setTextSize(2);
-	display.setTextColor(WHITE);
-	display.setCursor(0,0);
-	display.println(rx);
-	display.setTextSize(1);
-	display.setCursor(0,16);
-	display.print("St:");display.print(hertz);
-	display.setCursor(64,16);
-	display.print("rit:");display.print(rxRIT);
-	display.display();
-  
+  showFreq();
 }
+// end setup
 
 ///// START LOOP - MAIN LOOP
 
@@ -336,21 +321,13 @@ if (Serial.available()) {
              }        
    }
    if(byteRead == 55){     // 1 - up freq
-//<<<<<<< HEAD
     rxbfo = rxbfo + 1;
-//=======
-//    rxbfo = rxbfo + 10;
-//>>>>>>> origin/master
 	  INIT_LSB_FREQ = rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
    }
   if(byteRead == 56){   // 2 - down freq
-//<<<<<<< HEAD
     rxbfo = rxbfo - 1;
-//=======
-//    rxbfo = rxbfo - 10;
-//>>>>>>> origin/master
 	  INIT_LSB_FREQ = rxbfo;
     sendFrequency(rx);
     Serial.println(rxbfo);
@@ -415,94 +392,79 @@ void setincrement(){
   else if(increment == 10){increment = 50; hertz = "50Hz"; hertzPosition=0;RITon=0;}
   else if (increment == 50){increment = 100;  hertz = "100Hz"; hertzPosition=0;RITon=0;}
   else if (increment == 100){increment = 500; hertz="500Hz"; hertzPosition=0;RITon=0;}
-  else if (increment == 500){increment = 1000; hertz="1Khz"; hertzPosition=0;RITon=0;}
-  else if (increment == 1000){increment = 2500; hertz="2.5Khz"; hertzPosition=0;RITon=0;}
-  else if (increment == 2500){increment = 5000; hertz="5Khz"; hertzPosition=0;RITon=0;}
-  else if (increment == 5000){increment = 10000; hertz="10Khz"; hertzPosition=0;RITon=0;}
-  else if (increment == 10000){increment = 100000; hertz="100Khz"; hertzPosition=0;RITon=0;}
-  else if (increment == 100000){increment = 1000000; hertz="1Mhz"; hertzPosition=0;RITon=0;} 
-  else{increment = 0; hertz = "ritON"; hertzPosition=0; RITon=1;};  
+  else if (increment == 500){increment = 1000; hertz="1K"; hertzPosition=0;RITon=0;}
+  else if (increment == 1000){increment = 2500; hertz="2.5K"; hertzPosition=0;RITon=0;}
+  else if (increment == 2500){increment = 5000; hertz="5K"; hertzPosition=0;RITon=0;}
+  else if (increment == 5000){increment = 10000; hertz="10K"; hertzPosition=0;RITon=0;}
+  else if (increment == 10000){increment = 100000; hertz="100K"; hertzPosition=0;RITon=0;}
+  else if (increment == 100000){increment = 1000000; hertz="1MHz"; hertzPosition=0;RITon=0;} 
+  else{increment = 0; hertz = "RITon"; hertzPosition=0; RITon=1;};  
   showFreq();
   delay(250); // Adjust this delay to speed up/slow down the button menu scroll speed.
 }
 
 // oled display functions
 void showFreq(){
-	display.clearDisplay();	
-	display.setTextSize(2);
-	display.setTextColor(WHITE);
-	display.setCursor(0,0);
-	//display.print("F:");
-	display.println(rx);
-	display.setTextSize(1);
-	display.setCursor(0,16);
-	display.print("St:");display.print(hertz);
-	display.setCursor(64,16);
-	display.print("rit:");display.print(rxRIT);
-	display.display();
+  lcd.setCursor(0,0);
+  lcd.print("                ");
+	lcd.print(rx);
+  lcd.setCursor(0,1);
+  lcd.print("                ");
+  lcd.print("St:");lcd.print(hertz);
+  lcd.setCursor(10,1);
+  lcd.print("R:");lcd.print(rxRIT);
 }
-
 
 //  BAND CHANGE !!! band plan - change if need 
 void checkBTNdecode(){
   
-BTNdecodeON = digitalRead(BTNDEC);
-if(BTNdecodeON != BTNlaststate){
-    
-    if(BTNdecodeON == HIGH){
-         delay(250);
-         BTNcheck2 = 1;
+BTNdecodeON = digitalRead(BTNDEC);    
+    if(BTNdecodeON == LOW){
          BTNinc = BTNinc + 1;
-         if(BTNinc > 6){
+         
+         if(BTNinc > 7){
               BTNinc = 2;
               }
-    }
-    
-    if(BTNdecodeON == LOW){
-         BTNcheck2 = 0; 
-    }
-    
-    BTNlaststate = BTNcheck2;
-    
-    switch (BTNinc) {
+              
+          switch (BTNinc) {
           case 1:
-            rx=1810750;
+            rx=1810000;
             break;
           case 2:
-            rx=3500750;
+            rx=3500000;
             break;
           case 3:
-            rx=5250750;
+            rx=5250000;
             break;
           case 4:
-            rx=7199000;
+            rx=7000000;
             break;
           case 5:
-            rx=10100750;
+            rx=10100000;
             break;
           case 6:
             rx=14000000;
             break;
           case 7:
-            rx=18068750;
+            rx=18068000;
             break;    
           case 8:
-            rx=21000750;
+            rx=21000000;
             break;    
           case 9:
-            rx=24890750;
+            rx=24890000;
             break;    
           case 10:
-            rx=28000750;
+            rx=28000000;
             break;
           case 11:
-            rx=29100750;
-            break;    	  
+            rx=29100000;
+            break;        
           default:             
             break;
-        }
+        }         
+        delay(200);     
     }
-
 }
 
 //// OK END OF PROGRAM
