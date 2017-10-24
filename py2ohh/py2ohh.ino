@@ -17,7 +17,7 @@ uBitx mod - 25.09.2017 LZ1DPN
 
 #define F_MIN        1000000UL               // Lower frequency limit
 #define F_MAX        16000000000UL
-#define SECOND_OSC   (55000000l)
+#define SECOND_OSC   (57000000l)
 
 #define ENCODER_A    3                      // Encoder pin A
 #define ENCODER_B    2                      // Encoder pin B
@@ -32,9 +32,9 @@ uBitx mod - 25.09.2017 LZ1DPN
 LiquidCrystal lcd(LCD_RS, LCD_E, LCD_D4, LCD_D5, LCD_D6, LCD_D7);       // LCD - pin assignement in
 Si5351 si5351;
 Rotary r = Rotary(ENCODER_A, ENCODER_B);
-volatile uint32_t LSB = 999200000UL;
-volatile uint32_t USB = 999200000UL;
-volatile uint32_t bfo = 999200000UL;   //start in usb
+volatile uint32_t LSB = 1199200000UL;   // CHANGE IT WITH YOUR CRYSTAL FILTER FREQ !!!
+volatile uint32_t USB = 1199200000UL;
+volatile uint32_t bfo = 1199200000UL;   //start in usb
 //These USB/LSB frequencies are added to or subtracted from the vfo frequency in the "Loop()"
 //In this example my start frequency will be 14.20000 plus 9.001500 or clk0 = 23.2015Mhz
 volatile uint32_t vfo = 700000000UL / SI5351_FREQ_MULT; //start freq - change to suit
