@@ -43,8 +43,8 @@ Si5351 si5351;
 Adafruit_SSD1306 display(OLED_RESET);
 
 #define SECOND_OSC (57000000l)  // 57000000l
-int_fast32_t INIT_USB_FREQ = 11997700l;   //6500, 11996500l, 11997700l, 11996300l;
-int_fast32_t INIT_LSB_FREQ = 11998500l;   //8500, 11998500l, 11999700l, 11998300l;
+int_fast32_t INIT_USB_FREQ = 11996000l;   //6500, 11996500l, 11997700l, 11996300l;
+int_fast32_t INIT_LSB_FREQ = 11998400l;   //8500, 11998500l, 11999700l, 11998300l; 7000 7100 9200 8900 8400
 
 #define CW_TIMEOUT (600l) // in milliseconds, this is the parameter that determines how long the tx will hold between cw key downs
 unsigned long cwTimeout = 0;     //keyer var - dead operator control
@@ -53,7 +53,7 @@ unsigned long cwTimeout = 0;     //keyer var - dead operator control
 #define PTT_ON (6)   // PTT button 
 #define ANALOG_KEYER (A1)  // KEYER input - for analog straight key
 char inTx = 0;       // trx in transmit mode temp var
-char isUSB = 0;       // 
+char isUSB = 0;      // 
 char keyDown = 0;    // keyer down temp var
 int var_i = 0;
 int byteRead = 0;    // for serial comunication
@@ -317,14 +317,16 @@ if (Serial.available()) {
              }        
    }
    if(byteRead == 55){     // 1 - up freq
-      rxbfo = rxbfo + 1;
+      rxbfo = rxbfo + 100;
   	  INIT_LSB_FREQ = rxbfo;
+      INIT_USB_FREQ = rxbfo;
      sendFrequency(rx);
      Serial.println(rxbfo);
    }
    if(byteRead == 56){   // 2 - down freq
-      rxbfo = rxbfo - 1;
+      rxbfo = rxbfo - 100;
   	  INIT_LSB_FREQ = rxbfo;
+      INIT_USB_FREQ = rxbfo;
       sendFrequency(rx);
       Serial.println(rxbfo);
    }
